@@ -1,4 +1,3 @@
-
 import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.js";
 
@@ -43,7 +42,7 @@ let lightCalculationShader = `
     uniform vec3 lightColors[${numberOfLights}];        
     uniform vec3 lightPositions[${numberOfLights}];
     
-   
+    
     vec4 calculateLights(vec3 normal, vec3 position) {
         vec3 viewDirection = normalize(cameraPosition.xyz - position);
         vec4 color = vec4(ambientLightColor, 1.0);
@@ -51,7 +50,10 @@ let lightCalculationShader = `
         for (int i = 0; i < lightPositions.length(); i++) {
             vec3 lightDirection = normalize(lightPositions[i] - position);
             
-            
+                                 
+            float diffuse = max(dot(lightDirection, normal), 0.0);                                    
+                      
+                                  
             float specular = pow(max(dot(normalize(lightDirection + viewDirection), normal), 0.0), 200.0);
             
             color.rgb += lightColors[i] * diffuse + specular;
@@ -65,7 +67,7 @@ let fragmentShader = `
     precision highp float;
     ${lightCalculationShader}
     
-     
+      
     uniform sampler2D tex;
         
     in vec2 vUv;
@@ -80,6 +82,7 @@ let fragmentShader = `
         outColor = calculateLights(normalize(vNormal), viewDir) * texture(tex, vUv);
     }
 `;
+
 
 let vertexShader = `
     #version 300 es
@@ -101,7 +104,7 @@ let vertexShader = `
     void main()
     {
         gl_Position = modelViewProjectionMatrix * position;
-       
+        
         vUv = uv * timer * 4.0;
         viewDir = (modelMatrix * position).xyz;                
         vNormal = (normalMatrix * normal).xyz;
