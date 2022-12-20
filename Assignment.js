@@ -2,8 +2,8 @@
 import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.js";
 
-import {positions, normals, uvs, indices} from "../blender/girl.js"
-import {positions as mirrorPositions, normals as mirrorNormals, uvs as mirrorUvs, indices as mirrorIndices} from "../blender/plane.js"
+import {positions, normals, uvs, indices} from "../blender/T-Shape.js"
+import {positions as mirrorPositions, normals as mirrorNormals, uvs as mirrorUvs, indices as mirrorIndices}  from "../blender/plane.js"
 
 let skyboxPositions = new Float32Array([
     -1.0, 1.0, 1.0,
@@ -156,7 +156,7 @@ let mirrorVertexShader = `
     void main()
     {
         vUv = uv;
-        gl_Position = (modelViewProjectionMatrix * vec4((position + vec3(0.0, -1.4, 0.0)), .015));
+        gl_Position = (modelViewProjectionMatrix * vec4((position + vec3(0.0, -0.5, 0.0)), .015));
     }
 `;
 
@@ -367,10 +367,10 @@ async function loadTexture(fileName) {
 (async () => {
     const cubemap = app.createCubemap({
         negX: await loadTexture("nx.png"),
-        posX: await loadTexture("ny.png"),
-        negY: await loadTexture("nz.png"),
-        posY: await loadTexture("px.png"),
-        negZ: await loadTexture("py.png"),
+        posX: await loadTexture("px.png"),
+        negY: await loadTexture("ny.png"),
+        posY: await loadTexture("py.png"),
+        negZ: await loadTexture("nz.png"),
         posZ: await loadTexture("pz.png")
     });
 
@@ -379,7 +379,7 @@ async function loadTexture(fileName) {
 
     let drawCall = app.createDrawCall(program, vertexArray)
         //.texture("cubemap", cubemap)
-        .texture("tex", app.createTexture2D(await loadTexture("Autobots movie.jpg")))
+        .texture("tex", app.createTexture2D(await loadTexture("Autobot.png")))
         .uniform("ambientLightColor", ambientLightColor);
         
     let postDrawCall = app.createDrawCall(postProgram, postArray)
