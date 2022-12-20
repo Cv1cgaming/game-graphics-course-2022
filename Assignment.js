@@ -43,7 +43,7 @@ let lightCalculationShader = `
     uniform vec3 lightColors[${numberOfLights}];        
     uniform vec3 lightPositions[${numberOfLights}];
     
-    // This function calculates light reflection using Phong reflection model (ambient + diffuse + specular)
+   
     vec4 calculateLights(vec3 normal, vec3 position) {
         vec3 viewDirection = normalize(cameraPosition.xyz - position);
         vec4 color = vec4(ambientLightColor, 1.0);
@@ -51,13 +51,7 @@ let lightCalculationShader = `
         for (int i = 0; i < lightPositions.length(); i++) {
             vec3 lightDirection = normalize(lightPositions[i] - position);
             
-            // Lambertian reflection (ideal diffuse of matte surfaces) is also a part of Phong model                        
-            float diffuse = max(dot(lightDirection, normal), 0.0);                                    
-                      
-            // Phong specular highlight 
-            //float specular = pow(max(dot(viewDirection, reflect(-lightDirection, normal)), 0.0), 50.0);
             
-            // Blinn-Phong improved specular highlight                        
             float specular = pow(max(dot(normalize(lightDirection + viewDirection), normal), 0.0), 200.0);
             
             color.rgb += lightColors[i] * diffuse + specular;
@@ -71,7 +65,7 @@ let fragmentShader = `
     precision highp float;
     ${lightCalculationShader}
     
-    //uniform samplerCube cubemap;    
+     
     uniform sampler2D tex;
         
     in vec2 vUv;
@@ -82,11 +76,7 @@ let fragmentShader = `
     
     void main()
     {        
-        //vec4 tempTex = mix(cubemap, tex, .4f)
         
-        //outColor = tempTex * textureLod(cubemap, reflectedDir, 2.0);
-        //outColor = vec4(.2, .8, .2, 1);
-        //outColor = texture(tex, vUv);
         outColor = calculateLights(normalize(vNormal), viewDir) * texture(tex, vUv);
     }
 `;
@@ -111,8 +101,7 @@ let vertexShader = `
     void main()
     {
         gl_Position = modelViewProjectionMatrix * position;
-        // if (timer <= 0.0) timer = 0.0        //doesn't work
-        // if (timer >= 4.0) timer = 4.0;
+       
         vUv = uv * timer * 4.0;
         viewDir = (modelMatrix * position).xyz;                
         vNormal = (normalMatrix * normal).xyz;
@@ -136,7 +125,7 @@ let mirrorFragmentShader = `
     {                        
         vec2 screenPos = gl_FragCoord.xy / screenSize;
         
-        // 0.03 is a mirror distortion factor, try making a larger distortion         
+        
         screenPos.x += (texture(distortionMap, vUv).r - 0.5) * 0.01;
         outColor = texture(reflectionTex, screenPos) * vec4(.8, .9, .8, 1.0);
     }
@@ -179,7 +168,7 @@ let skyboxFragmentShader = `
     }
 `;
 
-// language=GLSL
+
 let skyboxVertexShader = `
     #version 300 es
     
@@ -239,36 +228,13 @@ let postFragmentShader = `
         vec4 col = texture(tex, v_position.xy);
         float depth = texture(depthTex, v_position.xy).r;
         
-        // Chromatic aberration 
-        //vec2 caOffset = vec2(0.01, 0.0);
-        //col.r = texture(tex, v_position.xy - caOffset).r;
-        //col.b = texture(tex, v_position.xy + caOffset).b;
-        
-        // Depth of field
-        //col = depthOfField(col, depth, v_position.xy);
-        // Noise         
-        //col.rgb += (2.0 - col.rgb) * random(v_position.xy) * 0.1;
-        
-        // Contrast + Brightness
-        col = pow(col, vec4(1.8)) * 0.8;
-        
-        // Color curves
-        //col.rgb = col.rgb * vec3(1.2, 1.1, 1.0) + vec3(0.0, 0.05, 0.2);
-        
-        // Ambient Occlusion
-        //col = ambientOcclusion(col, depth, v_position.xy);                
-        
-        // Invert
-        //col.rgb = 1.0 - col.rgb;
-        
-        // Fog
-        //col.rgb = col.rgb + vec3((depth - 0.992) * 200.0);         
+            
                         
         outColor = col;
     }
 `;
 
-// language=GLSL
+
 let postVertexShader = `
     #version 300 es
     
@@ -378,7 +344,7 @@ async function loadTexture(fileName) {
     const colorsBuffer = new Float32Array(numberOfLights * 3);
 
     let drawCall = app.createDrawCall(program, vertexArray)
-        //.texture("cubemap", cubemap)
+        
         .texture("tex", app.createTexture2D(await loadTexture("Autobot.png")))
         .uniform("ambientLightColor", ambientLightColor);
         
@@ -442,7 +408,7 @@ async function loadTexture(fileName) {
         drawCall.uniform("modelMatrix", modelMatrix);
         drawCall.uniform("normalMatrix", mat3.normalFromMat4(mat3.create(), modelMatrix));
         drawCall.uniform("timer",(Math.abs(Math.cos(time))));
-        //console.log(Math.sin(time));
+       
 
         for (let i = 0; i < numberOfLights; i++) {
             vec3.rotateY(lightPositions[i], lightInitialPositions[i], vec3.fromValues(0, 0, 0), time * 4.0);
@@ -466,7 +432,7 @@ async function loadTexture(fileName) {
     const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
     function draw() {
-        requestAnimationFrame(draw);    // Does it matter if I call it in the beggining or the end of function?
+        requestAnimationFrame(draw);    
 
         let time = new Date().getTime() * 0.001;
 
